@@ -19,6 +19,16 @@
 		"allowJs": true,
 		"noEmit": true,
 		"outDir": "lib",
-		"resolveJsonModule": true
-	}
+		"resolveJsonModule": true,
+		"baseUrl": "./src",
+		"paths": {
+			// Make paths an absolute import since we'll be importing it from various depths
+			"@types": [
+				"types.ts"
+			],
+		},
+	},
+	"include": [
+		"./src/**/*"
+	]
 }

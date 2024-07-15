@@ -1,12 +1,19 @@
 {
 	"name": "ivl",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
 	"description": "Lightweight input validation",
 	"author": {
 		"name": "Oskar Voorel",
 		"email": "oskar@voorel.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Oskar-V/validator.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Oskar-V/validator/issues/new"
 	},
 	"scripts": {
 		"build": "bun run build.mjs",
@@ -25,6 +32,14 @@
 		".": {
 			"types": "./lib/index.d.ts",
 			"default": "./lib/index.js"
+		},
+		"./patterns": {
+			"types": "./lib/patterns/index.d.ts",
+			"default": "./lib/patterns/index.js"
+		},
+		"./helpers": {
+			"types": "./lib/helpers/index.d.ts",
+			"default": "./lib/helpers/index.js"
 		}
 	},
 	"sideEffects": "false",

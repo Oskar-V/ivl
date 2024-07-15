@@ -1,4 +1,4 @@
-import { RULE, RULES } from './types'
+import { RULE, RULES } from '@types'
 
 // Individual rule helpers
 export const type =
@@ -31,14 +31,3 @@ export const preprocess = (fn: Function, rules: RULES) =>
 	Object.entries(rules).reduce((acc, [key, rule]) => ({
 		...acc, [key]: (i: unknown, ...overload: unknown[]) => rule(fn(i), ...overload)
 	}), {})
-
-
-exports = {
-	type,
-	matchesRegex,
-	allowUndefined,
-	preprocess,
-	stringBetween,
-	numberBetween,
-	acceptAny
-}
