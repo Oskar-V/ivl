@@ -24,7 +24,7 @@ export const getValueErrors = async (
 export const getSchemaErrors = async (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA,
-	strict: Boolean = false,
+	strict: boolean = false,
 	...overload: unknown[]
 ): CHECKED_SCHEMA => {
 	const errors: { [index: string]: any } = {}; // Figure out how to properly remove this any
@@ -57,7 +57,7 @@ export const getValueErrorsSync = (
 export const getSchemaErrorsSync = (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA_SYNC,
-	strict: Boolean = false,
+	strict: boolean = false,
 	...overload: unknown[]
 ): CHECKED_SCHEMA_SYNC => {
 	const errors = Object.entries(schema).reduce(

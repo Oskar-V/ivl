@@ -1,52 +1,55 @@
 {
-	"name": "ivl",
-	"version": "0.1.4",
-	"main": "lib/index.js",
-	"types": "lib/index.d.ts",
-	"description": "Lightweight input validation",
-	"author": {
-		"name": "Oskar Voorel",
-		"email": "oskar@voorel.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Oskar-V/validator.git"
-	},
-	"bugs": {
-		"url": "https://github.com/Oskar-V/validator/issues/new"
-	},
-	"scripts": {
-		"build": "bun run build.mjs",
-		"prepublishOnly": "bun run build"
-	},
-	"files": [
-		"lib"
-	],
-	"keywords": [
-		"validation",
-		"typescript",
-		"schema",
-		"input"
-	],
-	"exports": {
-		".": {
-			"types": "./lib/index.d.ts",
-			"default": "./lib/index.js"
-		},
-		"./patterns": {
-			"types": "./lib/patterns/index.d.ts",
-			"default": "./lib/patterns/index.js"
-		},
-		"./helpers": {
-			"types": "./lib/helpers/index.d.ts",
-			"default": "./lib/helpers/index.js"
-		}
-	},
-	"sideEffects": "false",
-	"license": "MIT",
-	"devDependencies": {
-		"@types/bun": "^1.0.0",
-		"bun-plugin-dts": "^0.2.1",
-		"typescript": "^5.2.2"
-	}
+  "name": "ivl",
+  "version": "0.1.4",
+  "author": {
+    "name": "Oskar Voorel",
+    "email": "oskar@voorel.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Oskar-V/validator.git"
+  },
+  "main": "lib/index.js",
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "bun-plugin-dts": "^0.2.1",
+    "mitata": "^0.1.11",
+    "typescript": "^5.2.2"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./patterns": {
+      "types": "./lib/patterns/index.d.ts",
+      "default": "./lib/patterns/index.js"
+    },
+    "./helpers": {
+      "types": "./lib/helpers/index.d.ts",
+      "default": "./lib/helpers/index.js"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/Oskar-V/validator/issues/new"
+  },
+  "description": "Lightweight input validation",
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/Oskar-V/validator",
+  "keywords": [
+    "validation",
+    "typescript",
+    "schema",
+    "input"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "bun run build.mjs",
+    "prepublishOnly": "bun run build",
+		"benchmark": "bun run ./benchmark/index.ts"
+  },
+  "sideEffects": "false",
+  "types": "lib/index.d.ts"
 }
