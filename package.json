@@ -1,0 +1,37 @@
+{
+	"name": "ivl",
+	"version": "0.1.0",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
+	"description": "Lightweight input validation",
+	"author": {
+		"name": "Oskar Voorel",
+		"email": "oskar@voorel.com"
+	},
+	"scripts": {
+		"build": "bun run build.mjs",
+		"prepublishOnly": "bun run build"
+	},
+	"files": [
+		"lib"
+	],
+	"keywords": [
+		"validation",
+		"typescript",
+		"schema",
+		"input"
+	],
+	"exports": {
+		".": {
+			"types": "./lib/index.d.ts",
+			"default": "./lib/index.js"
+		}
+	},
+	"sideEffects": "false",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/bun": "^1.0.0",
+		"bun-plugin-dts": "^0.2.1",
+		"typescript": "^5.2.2"
+	}
+}

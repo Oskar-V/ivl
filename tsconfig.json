@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"lib": [
+			"ESNext",
+			"DOM"
+		],
+		"target": "es2020",
+		"module": "esnext",
+		"strict": true,
+		"removeComments": false,
+		"exactOptionalPropertyTypes": true,
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"skipLibCheck": true,
+		"isolatedModules": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitAny": true,
+		"allowJs": true,
+		"noEmit": true,
+		"outDir": "lib",
+		"resolveJsonModule": true
+	}
+}
