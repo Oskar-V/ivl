@@ -1,4 +1,5 @@
 import { describe, test, expect } from 'bun:test'
+import { getValueErrors, getValueErrorsSync, getSchemaErrors, getSchemaErrorsSync } from '../src';
 import { matchesRegex } from '../src/helpers'
 import { EMAIL_PATTERN } from '../src/patterns';
 
@@ -31,3 +32,25 @@ describe("Regex helper", () => {
 		}, 100)
 	})
 });
+
+describe("Gracefully handle errors inside developer functions", () => {
+	const t = (i: string) => { throw Error(i) }
+	const input_rules = {
+		"Must match regex": t,
+	}
+	const schema = {
+		username: input_rules,
+	}
+	test('Error inside simple async rule', async () => {
+		expect(await getValueErrors('some-input', input_rules)).toEqual(Object.keys(input_rules))
+	})
+	test('Error inside simple sync rule', () => {
+		expect(getValueErrorsSync('some-input', input_rules)).toEqual(Object.keys(input_rules))
+	})
+	test('Error inside simple async schema', async () => {
+		expect(await getSchemaErrors('some-input', schema)).toEqual({ 'username': Object.keys(input_rules) })
+	})
+	test('Error inside simple sync schema', () => {
+		expect(getSchemaErrorsSync('some-input', schema)).toEqual({ 'username': Object.keys(input_rules) })
+	})
+})
