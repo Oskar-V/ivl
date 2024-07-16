@@ -46,10 +46,10 @@ group('Compare simple regex with other libraries', () => {
 	bench('yup async regex', () => {
 		const errors = yup.string().matches(EMAIL_PATTERN, "Must match regex").isValid(test_string)
 	})
-	bench('yup sync test', () => {
+	bench('yup sync custom', () => {
 		const errors = yup.string().test("patter", 'Must match regex', (i) => typeof i === 'string' && EMAIL_PATTERN.test(i)).isValidSync(test_string)
 	})
-	bench('yup async test', () => {
+	bench('yup async custom', () => {
 		const errors = yup.string().test("patter", 'Must match regex', (i) => typeof i === 'string' && EMAIL_PATTERN.test(i)).isValid(test_string)
 	})
 })
