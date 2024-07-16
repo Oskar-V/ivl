@@ -3,12 +3,56 @@ import { getValueErrors, getValueErrorsSync } from '../src/index';
 import { matchesRegex } from '../src/helpers';
 import { EMAIL_PATTERN } from '../src/patterns'
 
+// Comparison imports
+import { z } from 'zod';
+import yup from 'yup';
+
 group('Regex promise vs no promise', () => {
 	const test_string = "test@email.com";
-	baseline("pure regex helper", () => matchesRegex(EMAIL_PATTERN).call(test_string))
+	baseline("pure regex helper", () => matchesRegex(EMAIL_PATTERN).call(undefined, test_string));
 	bench('sync regex helper', () => getValueErrorsSync(test_string, { "Pattern": matchesRegex(EMAIL_PATTERN) }));
 	bench('async regex helper', () => getValueErrors(test_string, { "Pattern": matchesRegex(EMAIL_PATTERN) }));
 });
+
+group('Compare simple regex with other libraries', () => {
+	const test_string = "test@email.com";
+	baseline('ivl sync regex', () => {
+		const errors = getValueErrorsSync(test_string, { "Must match regex": matchesRegex(EMAIL_PATTERN) })
+	})
+	bench('ivl async regex', () => {
+		const errors = getValueErrors(test_string, { "Must match regex": matchesRegex(EMAIL_PATTERN) })
+	})
+	bench('ivl sync custom', () => {
+		const errors = getValueErrorsSync(test_string, { "Must match regex": (i) => typeof i === 'string' && EMAIL_PATTERN.test(i) })
+	})
+	bench('ivl async custom', () => {
+		const errors = getValueErrors(test_string, { "Must match regex": (i) => typeof i === 'string' && EMAIL_PATTERN.test(i) })
+	})
+	bench('zod sync regex', () => {
+		const errors = z.string().regex(EMAIL_PATTERN, "Must match regex").parse(test_string)
+	})
+	bench('zod async regex', () => {
+		const errors = z.string().regex(EMAIL_PATTERN, "Must match regex").parseAsync(test_string)
+	})
+	bench('zod sync custom', () => {
+		const errors = z.custom((val) => typeof val === 'string' && EMAIL_PATTERN.test(val)).parse(test_string)
+	})
+	bench('zod async custom', () => {
+		const errors = z.custom((val) => typeof val === 'string' && EMAIL_PATTERN.test(val)).parseAsync(test_string)
+	})
+	bench('yup sync regex', () => {
+		const errors = yup.string().matches(EMAIL_PATTERN, "Must match regex").isValidSync(test_string)
+	})
+	bench('yup async regex', () => {
+		const errors = yup.string().matches(EMAIL_PATTERN, "Must match regex").isValid(test_string)
+	})
+	bench('yup sync test', () => {
+		const errors = yup.string().test("patter", 'Must match regex', (i) => typeof i === 'string' && EMAIL_PATTERN.test(i)).isValidSync(test_string)
+	})
+	bench('yup async test', () => {
+		const errors = yup.string().test("patter", 'Must match regex', (i) => typeof i === 'string' && EMAIL_PATTERN.test(i)).isValid(test_string)
+	})
+})
 
 await run({
 	silent: false, // enable/disable stdout output
