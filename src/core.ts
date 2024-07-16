@@ -51,7 +51,13 @@ export const getValueErrorsSync = (
 	...overload: unknown[]
 ): string[] =>
 	Object.entries(rules).reduce(
-		(acc, [key, rule]) => rule(value, ...overload) ? acc : [...acc, key],
+		(acc, [key, rule]) => {
+			try {
+				return rule(value, ...overload) ? acc : [...acc, key];
+			} catch (error) {
+				return [...acc, key];
+			}
+		},
 		[] as string[]);
 
 export const getSchemaErrorsSync = (
