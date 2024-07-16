@@ -1,0 +1,19 @@
+name: run-tests
+run-name: ${{ github.actor }} requested tests
+on: 
+  pull_request:
+    types:
+      - opened
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
+jobs:
+  run-tests: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun test
+
