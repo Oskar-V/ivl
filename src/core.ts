@@ -1,17 +1,22 @@
-import { RULES, SCHEMA, CHECKABLE_OBJECT, CHECKED_SCHEMA, RULES_SYNC, SCHEMA_SYNC, CHECKED_SCHEMA_SYNC } from '@types'
+import { RULES, SCHEMA, CHECKABLE_OBJECT, CHECKED_SCHEMA, RULES_SYNC, SCHEMA_SYNC, CHECKED_SCHEMA_SYNC, SCHEMA_OPTIONS } from '@types'
+
+const DEFAULT_SCHEMA_OPTIONS: SCHEMA_OPTIONS = {
+	strict: false,
+	break_early: false
+}
 
 export const getValueErrors = async (
 	value: unknown,
 	rules: RULES,
 	...overload: unknown[]
 ): Promise<string[]> => {
-	const errors: { [index: string]: any } = {}; // Figure out how to properly remove this any
+	const errors: { [index: string]: Promise<boolean> | boolean } = {};
 	Object.entries(rules).forEach(([key, rule]) => {
 		// Wrap everything into a promise
-		errors[key] = Promise.resolve()
+		errors[key] = Promise.resolve(false)
 			.then(() => rule(value, ...overload))
 			.then((result) => errors[key] = result)
-			.catch(() => { errors[key] = false });
+			.catch(() => errors[key] = false);
 	});
 	await Promise.allSettled(Object.values(errors))
 
@@ -24,7 +29,7 @@ export const getValueErrors = async (
 export const getSchemaErrors = async (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA,
-	strict: boolean = false,
+	options: SCHEMA_OPTIONS = DEFAULT_SCHEMA_OPTIONS,
 	...overload: unknown[]
 ): CHECKED_SCHEMA => {
 	const errors: { [index: string]: any } = {}; // Figure out how to properly remove this any
@@ -34,7 +39,7 @@ export const getSchemaErrors = async (
 			.catch((result) => { errors[key] = result })
 	})
 
-	if (strict) {
+	if (options.strict) {
 		const incoming_keys = Object.keys(object);
 		const allowed_keys = new Set(Object.keys(schema));
 		const disallowed_keys = incoming_keys.filter((key) => !allowed_keys.has(key))
@@ -63,7 +68,7 @@ export const getValueErrorsSync = (
 export const getSchemaErrorsSync = (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA_SYNC,
-	strict: boolean = false,
+	options: SCHEMA_OPTIONS = DEFAULT_SCHEMA_OPTIONS,
 	...overload: unknown[]
 ): CHECKED_SCHEMA_SYNC => {
 	const errors = Object.entries(schema).reduce(
@@ -72,7 +77,7 @@ export const getSchemaErrorsSync = (
 		),
 		{} as CHECKED_SCHEMA_SYNC)
 
-	if (strict) {
+	if (options.strict) {
 		const incoming_keys = Object.keys(object);
 		const allowed_keys = new Set(Object.keys(schema));
 		const disallowed_keys = incoming_keys.filter((key) => !allowed_keys.has(key))
