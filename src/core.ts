@@ -2,7 +2,7 @@ import { RULES, SCHEMA, CHECKABLE_OBJECT, CHECKED_SCHEMA, RULES_SYNC, SCHEMA_SYN
 
 const DEFAULT_SCHEMA_OPTIONS: SCHEMA_OPTIONS = {
 	strict: false,
-	break_early: false
+	// break_early: false // To be implemented
 }
 
 export const getValueErrors = async (

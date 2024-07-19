@@ -48,7 +48,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "bun run build.mjs",
+    "build": "rm -rf ./lib && bun run build.mjs",
     "prepublishOnly": "bun run build",
     "benchmark": "bun run ./benchmark/index.ts"
   },
