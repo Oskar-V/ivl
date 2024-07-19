@@ -7,7 +7,7 @@ const hasLengthProperty = (obj: unknown): obj is { length: number } =>
 	obj !== null && typeof obj === 'object' && 'length' in obj && typeof (obj as any).length === 'number';
 
 // Helpers
-export const type =
+export const isType =
 	(type: "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function"): RULE_SYNC =>
 		(value: unknown) => typeof value === type
 
