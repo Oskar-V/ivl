@@ -29,7 +29,7 @@ export const maxLength = (max_length: number = Infinity): RULE_SYNC =>
 
 export const minLength = (min_length: number = Infinity): RULE_SYNC =>
 	(i: unknown) =>
-		hasLengthProperty(i) && i.length <= min_length
+		hasLengthProperty(i) && i.length >= min_length
 
 export const stringBetween = (max = 100, min = 0): RULE_SYNC =>
 	(s: unknown) =>
