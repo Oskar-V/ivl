@@ -39,10 +39,10 @@ const EMAIL_REQUIREMENTS: RULES = {
 
 const PASSWORD_REQUIREMENTS: RULES = {
   "Must be string": isType('string'),
-  "Must be at least 8 characters": minLength(Infinity, 8),
+  "Must be at least 8 characters": minLength(8),
   "Must contain at least one upper case character": matchesRegex(/(?=.*[A-Z])/),
   "Must contain at least one lower case character": matchesRegex(/(?=.*[a-z])/),
-}
+};
 
 // You can of course expand on your existing rules: 
 const STRONG_PASSWORD_REQUIREMENTS: RULES = {
@@ -92,7 +92,7 @@ const PASSWORD_REQUIREMENTS = {
 export const LOGIN_SCHEMA: SCHEMA =  {
   email: EMAIL_REQUIREMENTS,
   password: PASSWORD_REQUIREMENTS
-}
+};
 
 export const REGISTER_SCHEMA: SCHEMA = {
   organization_name: {} // Pass in an empty rule set, so the value can be whatever
@@ -101,13 +101,13 @@ export const REGISTER_SCHEMA: SCHEMA = {
     "Email already registered": existsInDatabase('email','users', false)
   },
   password: PASSWORD_REQUIREMENTS
-}
+};
 
 export const INVITATION_PARAM: SCHEMA = {
   code: {
     "Not a valid invitation": existsInDatabase('code', 'invitation')
   }
-}
+};
 
 ```
 
@@ -118,7 +118,7 @@ import { jwt } from 'hono/jwt';
 import { validator } from 'hono/validator';
 import { getSchemaErrors } from 'ivl';
 import type { SCHEMA } from 'ivl';
-import { LOGIN_SCHEMA, REGISTER_SCHEMA, INVITATION_PARAM } from './rules.ts'
+import { LOGIN_SCHEMA, REGISTER_SCHEMA, INVITATION_PARAM } from './rules.ts';
 
 // Wrapper for hono validator middleware
 const validateWrapper = (schema: SCHEMA, error: ClientErrorStatusCode | RedirectStatusCode = 400, strict = true) =>
