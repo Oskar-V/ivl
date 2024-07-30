@@ -11,7 +11,6 @@ export type CHECKABLE_OBJECT = { [index: string]: unknown };
 
 /**
  * @arg {boolean} strict --- Don't allow object to have keys not included in the schema
- * @arg {boolean} break_early --- Return the first error found
  */
 export type SCHEMA_OPTIONS = {
 	strict?: boolean

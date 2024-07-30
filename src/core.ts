@@ -1,15 +1,29 @@
-import { RULES, SCHEMA, CHECKABLE_OBJECT, CHECKED_SCHEMA, RULES_SYNC, SCHEMA_SYNC, CHECKED_SCHEMA_SYNC, SCHEMA_OPTIONS } from '@types';
+import { RULES, SCHEMA, CHECKABLE_OBJECT, CHECKED_SCHEMA, RULES_SYNC, SCHEMA_SYNC, CHECKED_SCHEMA_SYNC, SCHEMA_OPTIONS, RULE } from '@types';
 
 const DEFAULT_SCHEMA_OPTIONS: SCHEMA_OPTIONS = {
 	strict: false,
 	// break_early: false // To be implemented
 };
 
-export const hasAsyncFunction = (obj: Record<string, unknown>): boolean =>
-	Object.values(obj).some(value =>
+/**
+ * Detect if a RULES object has any async rules in it
+ * 
+ * @param {Record<string, RULE>} rules a rules object
+ * @returns {boolean} true if any of the rules is an async function otherwise false
+ */
+export const hasAsyncFunction = (rules: Record<string, RULE>): boolean =>
+	Object.values(rules).some(value =>
 		typeof value === 'function' && value.constructor.name === 'AsyncFunction'
 	);
 
+/**
+ * Check the input against all provided validation rules asynchronously
+ * 
+ * @param {unknown} value the value to check
+ * @param {RULES} rules rules object to use for validating the provided value
+ * @param {unknown[]} overload array of extra values the validator rules might need to properly validate the value 
+ * @returns {string[]} a list of rule names which failed validation
+ */
 export const getValueErrorsAsync = async (
 	value: unknown,
 	rules: RULES,
@@ -21,7 +35,10 @@ export const getValueErrorsAsync = async (
 		errors[key] = Promise.resolve(false)
 			.then(() => rule(value, ...overload))
 			.then((result) => errors[key] = result)
-			.catch(() => errors[key] = false);
+			.catch((error) => {
+				console.warn(`Rule validation functions for "${key}" didn't exit cleanly`, error);
+				return errors[key] = false
+			});
 	});
 
 	await Promise.allSettled(Object.values(errors));
@@ -32,6 +49,15 @@ export const getValueErrorsAsync = async (
 		[]);
 }
 
+/**
+ * Check a schema against all provided validation rules asynchronously
+ * 
+ * @param {CHECKABLE_OBJECT} object object to be validated
+ * @param {SCHEMA} schema schema to validate against
+ * @param {SCHEMA_OPTIONS} options options affecting how the rules are run
+ * @param {unknown[]} overload array of extra values the validator rules might need to properly validate the value 
+ * @returns {CHECKED_SCHEMA} an object containing keys and their respective lists of failed rule names
+ */
 export const getSchemaErrorsAsync = async (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA,
@@ -56,6 +82,13 @@ export const getSchemaErrorsAsync = async (
 	return errors;
 }
 
+/**
+ * 
+ * @param {unknown} value the value to check
+ * @param {RULES_SYNC} rules rules object to use for validating the provided value
+ * @param {unknown[]} overload array of extra values the validator rules might need to properly validate the value 
+ * @returns {string[]} a list of rule names which failed validation
+ */
 export const getValueErrorsSync = (
 	value: unknown,
 	rules: RULES_SYNC,
@@ -66,11 +99,21 @@ export const getValueErrorsSync = (
 			try {
 				return rule(value, ...overload) ? acc : [...acc, key];
 			} catch (error) {
+				console.warn(`Rule validation function for "${key}" didn't exit cleanly`, error);
 				return [...acc, key];
 			}
 		},
 		[]);
 
+/**
+* Check a schema against all provided validation rules asynchronously
+* 
+* @param {CHECKABLE_OBJECT} object object to be validated
+* @param {SCHEMA} schema schema to validate against
+* @param {SCHEMA_OPTIONS} options options affecting how the rules are run
+* @param {unknown[]} overload array of extra values the validator rules might need to properly validate the value 
+* @returns {CHECKED_SCHEMA} an object containing keys and their respective lists of failed rule names
+*/
 export const getSchemaErrorsSync = (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA_SYNC,
@@ -93,6 +136,13 @@ export const getSchemaErrorsSync = (
 	return errors;
 }
 
+/**
+ * 
+ * @param {unknown} value the value to check
+ * @param {RULES|RULES_SYNC} rules rules object to use for validating the provided value
+ * @param {unknown[]} overload array of extra values the validator rules might need to properly validate the value 
+ * @returns {string[]} a list of rule names which failed validation
+ */
 export const getValueErrors = (
 	value: unknown,
 	rules: RULES | RULES_SYNC,
@@ -103,6 +153,15 @@ export const getValueErrors = (
 	return getValueErrorsSync(value, rules as RULES_SYNC, ...overload);
 }
 
+/**
+ * Check a schema against all provided validation rules
+ * 
+ * @param {CHECKABLE_OBJECT} object object to be validated
+ * @param {SCHEMA} schema schema to validate against
+ * @param {SCHEMA_OPTIONS} options options affecting how the rules are run
+ * @param {unknown[]} overload array of extra values the validator rules might need to properly validate the value 
+ * @returns {CHECKED_SCHEMA} an object containing keys and their respective lists of failed rule names
+ */
 export const getSchemaErrors = (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA_SYNC | SCHEMA,
