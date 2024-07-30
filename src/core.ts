@@ -5,7 +5,12 @@ const DEFAULT_SCHEMA_OPTIONS: SCHEMA_OPTIONS = {
 	// break_early: false // To be implemented
 };
 
-export const getValueErrors = async (
+export const hasAsyncFunction = (obj: Record<string, unknown>): boolean =>
+	Object.values(obj).some(value =>
+		typeof value === 'function' && value.constructor.name === 'AsyncFunction'
+	);
+
+export const getValueErrorsAsync = async (
 	value: unknown,
 	rules: RULES,
 	...overload: unknown[]
@@ -27,7 +32,7 @@ export const getValueErrors = async (
 		[]);
 }
 
-export const getSchemaErrors = async (
+export const getSchemaErrorsAsync = async (
 	object: CHECKABLE_OBJECT,
 	schema: SCHEMA,
 	options: SCHEMA_OPTIONS = DEFAULT_SCHEMA_OPTIONS,
@@ -35,7 +40,7 @@ export const getSchemaErrors = async (
 ): CHECKED_SCHEMA => {
 	const errors: { [index: string]: any } = {}; // Figure out how to properly remove this any
 	Object.entries(schema).forEach(([key, rules]) => {
-		errors[key] = getValueErrors(object[key], rules, ...overload)
+		errors[key] = getValueErrorsAsync(object[key], rules, ...overload)
 			.then((result) => { errors[key] = result })
 			.catch((result) => { errors[key] = result })
 	});
@@ -86,4 +91,25 @@ export const getSchemaErrorsSync = (
 	}
 
 	return errors;
+}
+
+export const getValueErrors = (
+	value: unknown,
+	rules: RULES | RULES_SYNC,
+	...overload: unknown[]) => {
+	if (hasAsyncFunction(rules)) {
+		return getValueErrorsAsync(value, rules, ...overload);
+	}
+	return getValueErrorsSync(value, rules as RULES_SYNC, ...overload);
+}
+
+export const getSchemaErrors = (
+	object: CHECKABLE_OBJECT,
+	schema: SCHEMA_SYNC | SCHEMA,
+	options: SCHEMA_OPTIONS = DEFAULT_SCHEMA_OPTIONS,
+	...overload: unknown[]) => {
+	if (Object.values(schema).some(hasAsyncFunction)) {
+		return getSchemaErrorsAsync(object, schema, options, ...overload)
+	}
+	return getSchemaErrorsSync(object, schema as SCHEMA_SYNC, options, ...overload)
 }

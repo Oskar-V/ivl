@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { getValueErrors, getValueErrorsSync, getSchemaErrors, getSchemaErrorsSync } from '../src';
+import { getValueErrors, getValueErrorsSync, getSchemaErrors, getSchemaErrorsSync, getValueErrorsAsync } from '../src';
 import type { SCHEMA } from '../src/types'
 import { matchesRegex } from '../src/helpers'
 import { EMAIL_PATTERN } from '../src/patterns';
@@ -8,15 +8,26 @@ import { EMAIL_PATTERN } from '../src/patterns';
 describe('Successfully detect failing rules', () => {
 	const passing_input = 'string';
 	const failing_input = undefined;
-	const conditional_rules = { "Is string": (i: string) => typeof i === 'string' }
+	const conditional_rules = { "Is string": (i: unknown) => typeof i === 'string' }
 	const passing_rules = { "Passes": () => true }
 	const failing_rules = { "Fails": () => false }
 
+	test('Smart rules running as async', async () => {
+		const func = getValueErrors(passing_input, { "Async": async (i) => true });
+		expect(func.constructor.name).toBe('Promise');
+		expect(await func).toBeArray();
+	})
+
+	test('Smart rules running as sync', () => {
+		const func = getValueErrors(passing_input, { "Sync": (i) => true });
+		expect(func).toBeArray();
+	});
+
 	test('Async rules', async () => {
-		expect(await getValueErrors(passing_input, passing_rules)).toEqual([]);
-		expect(await getValueErrors(passing_input, failing_rules)).toEqual(Object.keys(failing_rules));
-		expect(await getValueErrors(passing_input, conditional_rules)).toEqual([]);
-		expect(await getValueErrors(failing_input, conditional_rules)).toEqual(Object.keys(conditional_rules));
+		expect(await getValueErrorsAsync(passing_input, passing_rules)).toEqual([]);
+		expect(await getValueErrorsAsync(passing_input, failing_rules)).toEqual(Object.keys(failing_rules));
+		expect(await getValueErrorsAsync(passing_input, conditional_rules)).toEqual([]);
+		expect(await getValueErrorsAsync(failing_input, conditional_rules)).toEqual(Object.keys(conditional_rules));
 	});
 
 	test('Sync rules', () => {
@@ -115,16 +126,16 @@ describe("Regex helper", () => {
 		() => { }
 	]
 	test("Passes valid email", () => {
-		expect(matchesRegex(EMAIL_PATTERN).call(undefined, valid_email)).toBe(true)
+		expect(matchesRegex(EMAIL_PATTERN)(valid_email)).toBe(true)
 	})
 
 	test("Fails invalid email", () => {
-		expect(matchesRegex(EMAIL_PATTERN).call(undefined, invalid_email)).toBe(false)
+		expect(matchesRegex(EMAIL_PATTERN)(invalid_email)).toBe(false)
 	})
 
 	non_strings.forEach((i) => {
 		test(`Fails non-string ${typeof i}`, () => {
-			expect(matchesRegex(EMAIL_PATTERN).call(undefined, i)).toBe(false);
+			expect(matchesRegex(EMAIL_PATTERN)(i)).toBe(false);
 		}, 100)
 	})
 });

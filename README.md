@@ -2,7 +2,14 @@
 This is a lightweight library for user input validation.
 Main focus is on speed and flexibility of the validation rules
 
-Supports asynchronous rule validation by default. Use `getInputErrorsSync` and `getSchemaErrorsSync` for better performance if you don't need to support asynchronous checks on your inputs. 
+By default it automatically detects and supports async rules in your rule sets.
+
+If your rule set and/or object are very large or complex, you may want to use 
+`getInputErrorsSync`/`getSchemaErrorsSync` or `getInputErrorsAsync`/`getSchemaErrorsAsync` for improved performance on synchronous and asynchronous rule sets respectively.
+
+Use synchronous versions of the functions for better performance if you don't need to support asynchronous checks on your inputs. 
+
+
 # Main functionality
 Write your own custom validators to exactly match your use case using a simple object:
 ```javascript
@@ -15,7 +22,23 @@ console.log(getInputErrors(11, my_rules)); // ["Input must be more than 40", "In
 console.log(getInputErrors(30, my_rules)) // ["Input must be more than 40"]
 
 ```
+# Installing
+### Bun.js
+```typescript
+bun add ivl
+```
 
+### yarn
+```typescript
+yarn add ivl
+```
+
+### npm
+```typescript
+npm install ivl
+```
+---
+# Usage examples
 ## Frontend example
 ```javascript
 // src/index.ts
