@@ -7,7 +7,7 @@ on:
       - "v*"
 
 jobs:
-  publish:
+  publish-npm:
     name: Publish to NPM
     runs-on: ubuntu-latest
     steps:
@@ -32,6 +32,34 @@ jobs:
         with:
           token: ${{ secrets.NPM_TOKEN }}
           provenance: true
+
+  publish-github:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # allow GITHUB_TOKEN to publish packages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: bun install
+      - name: Run tests
+        run: bun test
+      - name: Check npm version and config
+        run: |
+          npm --version
+          npm config get registry
+      - name: Publish to github
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          registry: "https://npm.pkg.github.com"
 
   release:
     name: Create git release
