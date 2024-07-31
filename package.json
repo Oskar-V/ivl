@@ -1,13 +1,13 @@
 {
   "name": "ivl",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "Oskar Voorel",
     "email": "oskar@voorel.com"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Oskar-V/validator.git"
+    "url": "git+https://github.com/Oskar-V/ivl.git"
   },
   "main": "lib/index.js",
   "devDependencies": {
@@ -33,13 +33,13 @@
     }
   },
   "bugs": {
-    "url": "https://github.com/Oskar-V/validator/issues/new"
+    "url": "https://github.com/Oskar-V/ivl/issues/new"
   },
   "description": "Lightweight input validation",
   "files": [
     "lib"
   ],
-  "homepage": "https://github.com/Oskar-V/validator",
+  "homepage": "https://github.com/Oskar-V/ivl",
   "keywords": [
     "validation",
     "typescript",
