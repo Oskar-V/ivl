@@ -23,20 +23,15 @@ console.log(getInputErrors(30, my_rules)) // ["Input must be more than 40"]
 
 ```
 # Installing
-### Bun.js
 ```typescript
-bun add ivl
+bun add ivl // bun.js
+yarn add ivl // yarn
+npm install ivl // npm
+pnpm install ivl // pnpm
 ```
 
-### yarn
-```typescript
-yarn add ivl
-```
+*deno coming soon*
 
-### npm
-```typescript
-npm install ivl
-```
 ---
 # Usage examples
 ## Frontend example
