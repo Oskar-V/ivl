@@ -4,7 +4,7 @@ import { RULE, RULE_SYNC } from '@types';
 
 // Type guards
 const hasLengthProperty = (obj: unknown): obj is { length: number } =>
-	obj !== null && typeof obj === 'object' && 'length' in obj && typeof (obj as any).length === 'number';
+	typeof obj === 'string' || (obj !== null && typeof obj === 'object' && 'length' in obj) && typeof (obj as any).length === 'number';
 
 // Helpers
 export const isType =
@@ -27,17 +27,17 @@ export const maxLength = (max_length: number = Infinity): RULE_SYNC =>
 	(i: unknown) =>
 		hasLengthProperty(i) && i.length <= max_length
 
-export const minLength = (min_length: number = Infinity): RULE_SYNC =>
+export const minLength = (min_length: number = 0): RULE_SYNC =>
 	(i: unknown) =>
 		hasLengthProperty(i) && i.length >= min_length
 
-export const stringBetween = (max = 100, min = 0): RULE_SYNC =>
+export const stringBetween = (max = Infinity, min = 0): RULE_SYNC =>
 	(s: unknown) =>
-		typeof s === 'string' && s.length >= min && s.length < max
+		typeof s === 'string' && s.length >= min && s.length <= max
 
-export const numberBetween = (max = 100, min = 1): RULE_SYNC =>
+export const numberBetween = (max = Infinity, min = -Infinity): RULE_SYNC =>
 	(i: unknown) =>
-		typeof i === 'number' && i >= min && i < max
+		typeof i === 'number' && i >= min && i <= max
 
 export const acceptAny = (rules: RULE[] = []): RULE =>
 	async (i: unknown, ...extra: unknown[]) =>

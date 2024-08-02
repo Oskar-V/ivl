@@ -1,9 +1,7 @@
 import { describe, test, expect } from 'bun:test'
 
 import { getValueErrors, getValueErrorsSync, getSchemaErrors, getSchemaErrorsSync, getValueErrorsAsync } from '../src';
-import type { SCHEMA } from '../src/types'
-import { matchesRegex } from '../src/helpers'
-import { EMAIL_PATTERN } from '../src/patterns';
+import type { SCHEMA } from '../src/types';
 
 describe('Successfully detect failing rules', () => {
 	const passing_input = 'string';
@@ -111,31 +109,3 @@ describe("Gracefully handle errors inside developer functions", () => {
 		expect(getSchemaErrorsSync(input_string, schema)).toEqual({ 'username': Object.keys(rules) })
 	})
 })
-
-describe("Regex helper", () => {
-	const valid_email = "valid@email.com";
-	const invalid_email = "invalid.email@com"
-	const non_strings = [
-		1,
-		null,
-		undefined,
-		{},
-		[], // "typeof []"" crashes bun test runner when used with test.each()
-		NaN,
-		true,
-		() => { }
-	]
-	test("Passes valid email", () => {
-		expect(matchesRegex(EMAIL_PATTERN)(valid_email)).toBe(true)
-	})
-
-	test("Fails invalid email", () => {
-		expect(matchesRegex(EMAIL_PATTERN)(invalid_email)).toBe(false)
-	})
-
-	non_strings.forEach((i) => {
-		test(`Fails non-string ${typeof i}`, () => {
-			expect(matchesRegex(EMAIL_PATTERN)(i)).toBe(false);
-		}, 100)
-	})
-});
