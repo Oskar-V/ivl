@@ -1,6 +1,6 @@
 // Functions which affect the a whole rule set - to be used inside schema objects
 
-import { RULES } from '@types';
+import type { RULES } from '@types';
 
 export const allowUndefined = (rules: RULES) =>
 	Object.entries(rules).reduce((acc, [key, rule]) => ({

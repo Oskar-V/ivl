@@ -4,22 +4,29 @@
 			"ESNext",
 			"DOM"
 		],
-		"target": "es2020",
-		"module": "esnext",
-		"strict": true,
+		"target": "ESNext",
+		"module": "ESNext",
 		"removeComments": false,
 		"exactOptionalPropertyTypes": true,
 		"esModuleInterop": true,
-		"moduleResolution": "node",
-		"skipLibCheck": true,
 		"isolatedModules": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
 		"noImplicitAny": true,
-		"allowJs": true,
-		"noEmit": true,
+		"allowJs": false,
 		"outDir": "lib",
 		"resolveJsonModule": true,
+		// Bundler mode
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true,
+		// Best practices
+		"strict": true,
+		"skipLibCheck": true,
+		"noFallthroughCasesInSwitch": true,
+		// Some stricter flags (disabled by default)
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
 		"baseUrl": "./src",
 		"paths": {
 			// Make paths an absolute import since we'll be importing it from various depths
