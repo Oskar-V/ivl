@@ -93,19 +93,22 @@ describe('Successfully detect failing schemas', () => {
 
 describe("Gracefully handle errors inside developer functions", () => {
 	const input_string = "";
-	const t = () => { throw Error() }
-	const rules = { "Must match regex": t, }
+	const rules = { "Will throw error": () => { throw Error('Self thrown') } }
 	const schema = { username: rules, }
 	test('Error inside simple async rule', async () => {
-		expect(await getValueErrors(input_string, rules)).toEqual(Object.keys(rules))
+		expect(await getValueErrors(input_string, rules))
+			.toEqual(Object.keys(rules))
 	})
 	test('Error inside simple sync rule', () => {
-		expect(getValueErrorsSync(input_string, rules)).toEqual(Object.keys(rules))
+		expect(getValueErrorsSync(input_string, rules))
+			.toEqual(Object.keys(rules))
 	})
 	test('Error inside simple async schema', async () => {
-		expect(await getSchemaErrors(input_string, schema)).toEqual({ 'username': Object.keys(rules) })
+		expect(await getSchemaErrors(input_string, schema))
+			.toEqual({ 'username': Object.keys(rules) })
 	})
 	test('Error inside simple sync schema', () => {
-		expect(getSchemaErrorsSync(input_string, schema)).toEqual({ 'username': Object.keys(rules) })
+		expect(getSchemaErrorsSync(input_string, schema))
+			.toEqual({ 'username': Object.keys(rules) })
 	})
 })

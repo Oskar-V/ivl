@@ -7,15 +7,15 @@ export type RULES = { [index: string]: RULE };
 export type SCHEMA_SYNC = { [index: string]: RULES_SYNC };
 export type SCHEMA = { [index: string]: RULES };
 
-export type CHECKABLE_OBJECT = { [index: string]: unknown };
-
 /**
  * @arg {boolean} strict --- Don't allow object to have keys not included in the schema
- */
+*/
 export type SCHEMA_OPTIONS = {
 	strict?: boolean
 	// break_early?: boolean
 };
 
-export type CHECKED_SCHEMA_SYNC = { [index: string]: string[] };
-export type CHECKED_SCHEMA = Promise<CHECKED_SCHEMA_SYNC>;
+export type CHECKABLE_OBJECT = { [index: string]: unknown };
+
+export type CHECKED_SCHEMA_SYNC<T extends keyof CHECKABLE_OBJECT> = { [K in T]: string[] };
+export type CHECKED_SCHEMA<T extends keyof CHECKABLE_OBJECT> = Promise<CHECKED_SCHEMA_SYNC<T>>;

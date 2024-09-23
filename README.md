@@ -112,8 +112,8 @@ export const LOGIN_SCHEMA: SCHEMA =  {
 };
 
 export const REGISTER_SCHEMA: SCHEMA = {
-	// We can pass in an empty rule set to allow any value
-	// Or we can omit the argument entirely and set the strict flag to false when checking the schema
+  // We can pass in an empty rule set to allow any value
+  // Or we can omit the argument entirely and set the strict flag to false when checking the schema
   organization_name: {}
   email: {
     ...EMAIL_REQUIREMENTS,
@@ -137,17 +137,17 @@ export const INVITATION_PARAM: SCHEMA = {
 
 ### `index.ts`
 ```typescript
-import { Hono } from 'hono';
+import { Hono, ValidationTargets } from 'hono';
 import { validator } from 'hono/validator';
 import { getSchemaErrors } from 'ivl';
 import { LOGIN_SCHEMA, REGISTER_SCHEMA, INVITE_REGISTER_SCHEMA, INVITATION_PARAM } from './rules.ts';
 
 // Wrapper for hono validator middleware
-const validateWrapper = async (input_type:string, schema: SCHEMA) => 
-	validate(input_type, async (value: any, c: Context) => {
+export const validate = (input_type: keyof ValidationTargets, schema: SCHEMA) =>
+  validator(input_type, async (value: CHECKABLE_OBJECT) => {
     const errors = await getSchemaErrors(value, schema, { strict: true });
     if (Object.values(errors).filter((e) => e.length).length) {
-      throw new HTTPException(error, {
+      throw new HTTPException(400, {
         message: JSON.stringify(errors),
       });
     }
@@ -157,20 +157,20 @@ const validateWrapper = async (input_type:string, schema: SCHEMA) =>
 const app = new Hono();
 
 app.post('/login',
-	validateWrapper('json', LOGIN_SCHEMA),
+  validate('json', LOGIN_SCHEMA),
   (c) => c.text("Success"));
 
 app.all('/logout', (c) => c.text("Success"));
 
 app.put('/register', 
-  validateWrapper('json', REGISTER_SCHEMA),
+  validate('json', REGISTER_SCHEMA),
   (c) => c.text("Success"));
 
 // This first validates the invitation parameter against our database
 // And then validates the body of the request
 app.put('/register/:invitation_code',
-  validateWrapper('param', INVITATION_PARAM),
-  validateWrapper('json', INVITE_REGISTER_SCHEMA ),
+  validate('param', INVITATION_PARAM),
+  validate('json', INVITE_REGISTER_SCHEMA ),
   (c)=> c.text("Success"));
 
 export default app;
