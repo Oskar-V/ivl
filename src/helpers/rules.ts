@@ -39,10 +39,10 @@ export const numberBetween = (max = Infinity, min = -Infinity): RULE_SYNC =>
 	(i: unknown) =>
 		typeof i === 'number' && i >= min && i <= max
 
-export const acceptAny = (rules: RULE[] = []): RULE =>
+export const acceptAnyAsync = (rules: RULE[] = []): RULE =>
 	async (i: unknown, ...extra: unknown[]) =>
-		(await Promise.all(rules.map(rule => rule(undefined, i, ...extra)))).some(e => e)
+		(await Promise.all(rules.map(rule => rule(i, ...extra)))).some(e => e)
 
 export const acceptAnySync = (rules: RULE_SYNC[] = []): RULE_SYNC =>
 	(i: unknown, ...extra: unknown[]) =>
-		rules.map((rule) => rule(undefined, i, ...extra)).some(e => e)
+		rules.map((rule) => rule(i, ...extra)).some(e => e)

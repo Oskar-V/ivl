@@ -1,7 +1,8 @@
 import { describe, test, expect } from 'bun:test'
 
-import { matchesRegex, maxLength, minLength, max, min, isType, stringBetween, numberBetween } from '../src/helpers'
+import { matchesRegex, maxLength, minLength, max, min, stringBetween, numberBetween, acceptAnySync } from '../src/helpers'
 import { EMAIL_PATTERN } from '../src/patterns';
+import { getValueErrors } from '../src';
 
 describe("Regex helper", () => {
 	const valid_email = "valid@email.com";
@@ -126,3 +127,19 @@ describe('stringBetween helper', () => {
 		values.forEach((v) => expect(stringBetween(-Infinity, Infinity)(v)).toBe(false))
 	})
 });
+
+describe('acceptAny rules helper', () => {
+	test('Accepts different async rules', () => {
+		// TODO implement properly in the future
+	})
+	test('Accept different sync rules', () => {
+		const rules = {
+			'Can\'t be 3': acceptAnySync([max(2), min(4)])
+		}
+		expect(getValueErrors(1, rules)).toBeArrayOfSize(0);
+		expect(getValueErrors(3, rules)).toBeArrayOfSize(1);
+		expect(getValueErrors('1', rules)).toBeArrayOfSize(1);
+	})
+})
+
+
