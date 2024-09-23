@@ -112,3 +112,44 @@ describe("Gracefully handle errors inside developer functions", () => {
 			.toEqual({ 'username': Object.keys(rules) })
 	})
 })
+
+describe('acceptAny schema helper', () => {
+	type t = { name?: any, email?: any };
+	test('Accept different async schemas', async () => {
+		const test_schema: SCHEMA = {
+			user: [
+				{
+					'is a valid id': (i) => typeof i === 'number'
+				},
+				{
+					'has a name': async (i) => {
+						await Promise.resolve(false)
+						return (i as t).name
+					},
+					'has an email': (i) => (i as t).email
+				}
+			]
+		};
+
+		expect(await getSchemaErrors({ user: 5 }, test_schema)).toEqual({ user: [] });
+		expect(await getSchemaErrors({ user: { name: 'name', email: 'email' } }, test_schema)).toEqual({ user: [] });
+		expect(await getSchemaErrors({ user: { email: 'email' } }, test_schema)).toEqual({ user: [['is a valid id'], ['has a name']] });
+		expect(await getSchemaErrors({ user: 'name' }, test_schema)).toEqual({ user: [['is a valid id'], ['has a name', 'has an email']] });
+
+	})
+	test('Accept different sync schemas', () => {
+		const test_schema: SCHEMA = {
+			user: [
+				{ "is a valid id": (i) => typeof i === 'number' },
+				{
+					'has a name': (i) => (i as t).name,
+					'has an email': (i) => (i as t).email
+				}
+			]
+		}
+		expect(getSchemaErrors({ user: 5 }, test_schema)).toEqual({ user: [] });
+		expect(getSchemaErrors({ user: { name: 'name', email: 'email' } }, test_schema)).toEqual({ user: [] });
+		expect(getSchemaErrors({ user: { email: 'email' } }, test_schema)).toEqual({ user: [['is a valid id'], ['has a name']] });
+		expect(getSchemaErrors({ user: 'name' }, test_schema)).toEqual({ user: [['is a valid id'], ['has a name', 'has an email']] });
+	})
+})

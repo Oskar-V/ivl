@@ -181,3 +181,6 @@ bun.lockb
 
 # Final built versions of the library
 lib/
+
+# File used for debugging library functions
+test/debugging.ts
