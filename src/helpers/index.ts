@@ -1,2 +1,2 @@
 export * from './rules';
-export * as ruleSet from './schema';
+export * from './schema';
