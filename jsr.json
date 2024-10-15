@@ -1,0 +1,9 @@
+{
+	"name": "@ivl/ivl",
+	"version": "0.3.2",
+	"exports": {
+		".": "./src/core.ts",
+		"./helpers": "./src/helpers/index.ts",
+		"./patterns": "./src/patterns/index.ts"
+	}
+}

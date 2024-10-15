@@ -36,6 +36,17 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           provenance: true
 
+  publish-jsr:
+    name: Publish to JSR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish package
+        run: npx jsr publish
+
   # publish-github:
   #   runs-on: ubuntu-latest
   #   permissions:
