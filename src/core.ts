@@ -1,4 +1,12 @@
-import type { RULES, SCHEMA, CHECKABLE_OBJECT, CHECKED_SCHEMA, RULES_SYNC, SCHEMA_SYNC, CHECKED_SCHEMA_SYNC, SCHEMA_OPTIONS, RULE } from '@types';
+import type {
+	RULES,
+	SCHEMA,
+	CHECKABLE_OBJECT,
+	CHECKED_SCHEMA,
+	RULES_SYNC, SCHEMA_SYNC,
+	CHECKED_SCHEMA_SYNC,
+	SCHEMA_OPTIONS
+} from '@types';
 
 const DEFAULT_SCHEMA_OPTIONS: SCHEMA_OPTIONS = {
 	strict: false,
@@ -6,22 +14,27 @@ const DEFAULT_SCHEMA_OPTIONS: SCHEMA_OPTIONS = {
 };
 
 /**
- * Detect if a RULES object has any async rules in it
+ * Detect if a function is async or not
  * 
- * @param {Record<string, RULE>|Record<string, RULE>[]} rules a rules object
+ * @param {Function} fn a rules object
  * @returns {boolean} true if any of the rules is an async function otherwise false
  */
-export const hasAsyncFunction = (rules: Record<string, RULE> | Record<string, RULE>[]): boolean => {
+export const isAsyncFunction = (fn: Function) =>
+	typeof fn === 'function' && fn.constructor.name === 'AsyncFunction'
+
+/**
+ * Detect if a RULES object has any async rules in it
+ * 
+ * @param {RULES|RULES[]} rules a rules object
+ * @returns {boolean} true if any of the rules is an async function otherwise false
+ */
+export const hasAsyncFunction = (rules: RULES | RULES[]): boolean => {
 	if (Array.isArray(rules)) {
 		return rules.some((e) =>
-			Object.values(e).some((rule =>
-				typeof rule === 'function' && rule.constructor.name === 'AsyncFunction'
-			))
+			Object.values(e).some(isAsyncFunction)
 		)
 	}
-	return Object.values(rules).some(rule =>
-		typeof rule === 'function' && rule.constructor.name === 'AsyncFunction'
-	)
+	return Object.values(rules).some(isAsyncFunction)
 };
 
 /**
@@ -37,7 +50,7 @@ export const getValueErrorsAsync = async (
 	rules: RULES,
 	...overload: unknown[]
 ): Promise<string[]> => {
-	const errors: { [index: string]: Promise<boolean> | boolean } = {};
+	const errors: { [key: string]: Promise<boolean> | boolean } = {};
 	Object.entries(rules).forEach(([key, rule]) => {
 		// Wrap everything into a promise
 		errors[key] = Promise.resolve(false)
@@ -70,8 +83,8 @@ export const getSchemaErrorsAsync = async <T extends keyof CHECKABLE_OBJECT>(
 	schema: { [K in T]: RULES | RULES[] },
 	options: SCHEMA_OPTIONS = DEFAULT_SCHEMA_OPTIONS,
 	...overload: unknown[]
-) => {
-	const errors: Partial<CHECKED_SCHEMA_SYNC<T>> | Promise<T[]>[] = {};
+): CHECKED_SCHEMA<T> => {
+	const errors: Partial<CHECKED_SCHEMA_SYNC<T>> = {};
 	const validationPromises: Promise<void>[] = [];
 	Object.entries<RULES | RULES[]>(schema).forEach(([key, rules]) => {
 		let promise;

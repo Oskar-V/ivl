@@ -5,19 +5,19 @@ import type { SCHEMA } from '../src/types';
 
 describe('Successfully detect failing rules', () => {
 	const passing_input = 'string';
-	const failing_input = undefined;
+	const failing_input = 123;
 	const conditional_rules = { "Is string": (i: unknown) => typeof i === 'string' }
 	const passing_rules = { "Passes": () => true }
 	const failing_rules = { "Fails": () => false }
 
 	test('Smart rules running as async', async () => {
-		const func = getValueErrors(passing_input, { "Async": async (i) => true });
+		const func = getValueErrors(passing_input, { "Async": async () => await Promise.resolve(true) });
 		expect(func.constructor.name).toBe('Promise');
 		expect(await func).toBeArray();
 	})
 
 	test('Smart rules running as sync', () => {
-		const func = getValueErrors(passing_input, { "Sync": (i) => true });
+		const func = getValueErrors(passing_input, { "Sync": () => true });
 		expect(func).toBeArray();
 	});
 
