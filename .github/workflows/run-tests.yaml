@@ -1,17 +1,21 @@
 name: run-tests
 run-name: ${{ github.actor }} requested tests
-# Runs on every PR update and every push to main. No path filter: package.json,
-# the lockfile, tsconfig, jsr.json, and the workflows themselves all affect the result.
+# Runs once per commit: on every push to any branch in this repo, and on PRs from forks
+# (whose pushes happen in the fork, not here). PRs from branches in this repo are already
+# covered by the push run, so their pull_request run is skipped. Tag pushes are left
+# to publish.yaml. No path filter: package.json, the lockfile, tsconfig, jsr.json, and
+# the workflows themselves all affect the result.
 on:
   pull_request:
     branches:
       - "main"
   push:
     branches:
-      - "main"
+      - "**"
 
 jobs:
   run-tests:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

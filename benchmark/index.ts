@@ -58,7 +58,10 @@ group('Compare simple regex with other libraries', () => {
 	})
 })
 
+// CI sets BENCH_FORMAT=markdown to produce the README benchmark section
+const markdown = process.env.BENCH_FORMAT === 'markdown';
+
 await run({
-	colors: true, // enable/disable colors (default: true)
-	format: 'mitata', // 'mitata' | 'json' | 'markdown' | 'quiet'
+	colors: !markdown, // enable/disable colors (default: true)
+	format: markdown ? 'markdown' : 'mitata', // 'mitata' | 'json' | 'markdown' | 'quiet'
 });
