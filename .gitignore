@@ -184,3 +184,6 @@ lib/
 
 # File used for debugging library functions
 test/debugging.ts
+
+# Node build of the benchmark (bun run benchmark:node)
+benchmark/.dist
