@@ -4,7 +4,7 @@ Main focus is on speed and flexibility of the validation rules.
 
 By default `getValueErrors` and `getSchemaErrors` automatically detects and chooses the most performant checking method for your rule set.
 
-If your rule set and/or schema are very large or complex, you may want to directly use `getValueErrorsSync`/`getSchemaErrorsSync` or `getValueErrorsAsync`/`getSchemaErrorsAsync` for improved performance on synchronous and asynchronous rule sets respectively.
+If you validate against the same rule set or schema repeatedly, compile it once with `compileRules`/`compileSchema` (see [Compiled validators](#compiled-validators)) - that does the sync/async detection up front and is the fastest option.
 
 Use synchronous versions of the functions for better performance if you don't need to support asynchronous checks on your inputs. 
 
@@ -50,6 +50,80 @@ const inDatabase: RULE<string, [ctx: { db: Database }]> = async (value, ctx) => 
 > **Note:** annotating a rule set as `RULES` (or a schema as `SCHEMA`) widens every rule to
 > "may be sync or async", so the return type becomes `string[] | Promise<string[]>`. Prefer
 > `satisfies RULES` / `satisfies SCHEMA`, which validates the shape without losing the inferred types.
+
+# Compiled validators
+`compileRules` and `compileSchema` turn a rule set or schema into a reusable validator. They return
+exactly what `getValueErrors`/`getSchemaErrors` would, with the same sync/async type inference, but the
+work those functions repeat on every call - finding the rule keys and checking for async rules - is
+done once up front:
+
+```typescript
+import { compileSchema } from 'ivl';
+import { EMAIL_RULES, STRONG_PASSWORD_RULES } from 'ivl/patterns';
+
+// Compile once, at module level
+const validateRegistration = compileSchema({
+  email: EMAIL_RULES,
+  password: STRONG_PASSWORD_RULES,
+}, { strict: true });
+
+// ...then call it per request
+const errors = validateRegistration(body); // { email: string[], password: string[] }
+```
+
+The rule sets and options are captured when compiling, so changing them afterwards has no effect on an
+existing validator.
+
+# Options
+`getSchemaErrors`, `getSchemaErrorsSync`, `getSchemaErrorsAsync` and `compileSchema` take an options object;
+`compileRules` takes `break_early`. Both options are off by default.
+
+- **`strict`** - also report keys of the object that the schema doesn't have, each as `['Key not allowed']`.
+- **`break_early`** - report only the first failing rule of each rule set instead of all of them. Rules
+  that aren't `async` run first, in order, and stop at the first failure; `async` rules only run if all of
+  those passed. So a cheap check that fails skips the expensive ones, like a long regex or a database lookup:
+
+```typescript
+const validateEmail = compileRules({
+  ...EMAIL_RULES, // cheap checks first
+  "Email already registered": async (i: unknown) => !(await emailExists(i)),
+}, { break_early: true });
+
+await validateEmail('not an email'); // ['Must be a valid email address'] - the lookup never ran
+```
+
+Every field of a schema is still validated with `break_early`; each just reports at most one error. Leave
+it off when you want to show users every problem at once, e.g. all unmet password requirements.
+
+# Ready-made rule sets
+`ivl/patterns` exports rule sets for common formats, ready to drop into a schema:
+
+```typescript
+import { getSchemaErrors } from 'ivl';
+import { EMAIL_RULES, STRONG_PASSWORD_RULES, IPV4_RULES, IPV6_RULES } from 'ivl/patterns';
+
+const errors = getSchemaErrors(input, {
+  email: EMAIL_RULES,
+  password: STRONG_PASSWORD_RULES,
+  ip: [IPV4_RULES, IPV6_RULES], // passes if either rule set passes
+});
+```
+
+Available: `EMAIL_RULES`, `URL_RULES`, `UUID_RULES`, `UUID_V4_RULES`, `IPV4_RULES`, `IPV6_RULES`,
+`MAC_ADDRESS_RULES`, `HEX_COLOR_RULES`, `SLUG_RULES`, `E164_PHONE_RULES`, `SEMVER_RULES`, `BASE64_RULES`,
+`JWT_RULES`, `ISO_8601_DATE_RULES`, `ISO_8601_DATETIME_RULES`, `ISO_8601_TIME_RULES`, `PASSWORD_RULES`
+and `STRONG_PASSWORD_RULES`.
+
+All of them are synchronous and frozen. To customise one, spread it into a new object:
+
+```typescript
+const COMPANY_EMAIL_RULES = {
+  ...EMAIL_RULES,
+  "Must be a company address": (i: unknown) => typeof i === 'string' && i.endsWith('@example.com'),
+};
+```
+
+The date rule sets also check the calendar, so `2024-02-30` fails even though it matches the pattern.
 
 # Installing
 ```typescript

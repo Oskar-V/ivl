@@ -2,7 +2,7 @@
 // the single runtime test below only exists so `bun test` picks the file up.
 import { test, expect } from 'bun:test';
 
-import { getValueErrors, getSchemaErrors, getSchemaErrorsSync, getSchemaErrorsAsync } from '../src';
+import { getValueErrors, getSchemaErrors, getSchemaErrorsSync, getSchemaErrorsAsync, compileRules, compileSchema } from '../src';
 import { allowUndefined, preprocess, minLength, acceptAnySync, acceptAnyAsync, notAsync, everyElementSync, everyElementAsync } from '../src/helpers';
 import type { RULE, RULES, SCHEMA, CHECKED_SCHEMA_SYNC } from '../src';
 
@@ -84,7 +84,26 @@ const typed_every_async = everyElementAsync(async (s: string) => s.length > 0);
 type _o4 = Expect<Equal<ReturnType<typeof getValueErrors<unknown, { a: typeof typed_every_sync }>>, string[]>>;
 type _o5 = Expect<Equal<ReturnType<typeof getValueErrors<unknown, { a: typeof typed_every_async }>>, Promise<string[]>>>;
 
+// --- compileRules / compileSchema: same inference as the uncompiled functions --------
+type _c1 = Expect<Equal<ReturnType<ReturnType<typeof compileRules<typeof sync_rules>>>, string[]>>;
+type _c2 = Expect<Equal<ReturnType<ReturnType<typeof compileRules<typeof async_rules>>>, Promise<string[]>>>;
+type _c3 = Expect<Equal<ReturnType<ReturnType<typeof compileRules<typeof mixed_rules>>>, Promise<string[]>>>;
+type _c4 = Expect<Equal<ReturnType<ReturnType<typeof compileRules<typeof annotated_rules>>>, string[] | Promise<string[]>>>;
+// The value parameter comes from the rules
+compileRules(string_rules)('hello');
+// @ts-expect-error a number is not assignable to a rule expecting a string
+compileRules(string_rules)(123);
+compileRules(sync_rules)(123);
+// Rules with typed overloads are accepted
+const context_rules = { "in db": (i: string, ctx: { db: Set<string> }) => ctx.db.has(i) };
+compileRules(context_rules)('x', { db: new Set() });
+
+const compiled_sync = compileSchema(schema)({});
+type _c5 = Expect<Equal<typeof compiled_sync, CHECKED_SCHEMA_SYNC<typeof schema>>>;
+const compiled_async = compileSchema({ ...schema, extra: async_rules })({});
+type _c6 = Expect<Equal<typeof compiled_async, Promise<CHECKED_SCHEMA_SYNC<typeof schema & { extra: typeof async_rules }>>>>;
+
 // Referenced here so `noUnusedLocals` is satisfied
-export type Assertions = [_v1, _v2, _v3, _v4, _v5, _s1, _s2, _s3, _s4, _s5, _s6, _s7, _s8, _h1, _h2, _h3, _h4, _o1, _o2, _o3, _o4, _o5];
+export type Assertions = [_v1, _v2, _v3, _v4, _v5, _s1, _s2, _s3, _s4, _s5, _s6, _s7, _s8, _h1, _h2, _h3, _h4, _o1, _o2, _o3, _o4, _o5, _c1, _c2, _c3, _c4, _c5, _c6];
 
 test('type assertions compile', () => { expect(true).toBe(true); });

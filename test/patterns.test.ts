@@ -13,9 +13,21 @@ import {
 	SEMVER_PATTERN,
 	BASE64_PATTERN,
 	JWT_PATTERN,
+	EMAIL_PATTERN,
+	URL_PATTERN,
+	MYSQL_TIMESTAMP_PATTERN,
+	ISO_8601_DATETIME_PATTERN_STRICT,
+	ISO_8601_DATETIME_PATTERN,
+	ISO_8601_TIME_PATTERN,
+	CONTAINS_LOWERCASE_CHARACTER_PATTERN,
+	CONTAINS_UPPERCASE_CHARACTER_PATTERN,
+	CONTAINS_DIGIT_CHARACTER_PATTERN,
+	CONTAINS_SYMBOL_CHARACTER_PATTERN,
 } from '../src/patterns';
 
-const testPattern = (name: string, pattern: RegExp, valid: string[], invalid: string[]) => {
+// `known_gaps` are inputs the pattern currently accepts but shouldn't. They run as
+// test.failing, so fixing the pattern turns them red as a reminder to move them to `invalid`.
+const testPattern = (name: string, pattern: RegExp, valid: string[], invalid: string[], known_gaps: string[] = []) => {
 	describe(name, () => {
 		valid.forEach((i) => {
 			test(`Passes "${i}"`, () => {
@@ -24,6 +36,11 @@ const testPattern = (name: string, pattern: RegExp, valid: string[], invalid: st
 		})
 		invalid.forEach((i) => {
 			test(`Fails "${i}"`, () => {
+				expect(pattern.test(i)).toBe(false)
+			})
+		})
+		known_gaps.forEach((i) => {
+			test.failing(`Known gap: should fail "${i}"`, () => {
 				expect(pattern.test(i)).toBe(false)
 			})
 		})
@@ -203,5 +220,111 @@ testPattern('JWT pattern', JWT_PATTERN,
 		'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0', // only two segments
 		'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2ln.ZXh0cmE', // four segments
 		'eyJhbGciOiJIUzI1NiJ9.eyJzdWIrOiIxMjM0In0=.c2ln', // padding character
+		'',
+	])
+
+testPattern('Email pattern', EMAIL_PATTERN,
+	[
+		'a@b.co',
+		'first.last+tag@sub.example.org',
+		'under_score%percent@example.com',
+	],
+	[
+		'a@b', // no TLD
+		'@b.co', // missing local part
+		'a@.co', // missing domain
+		'a b@c.co', // whitespace
+		'a@b.c1', // digit in TLD
+		'a@@b.co', // double @
+		'',
+	],
+	[
+		'a..b@c.co', // consecutive dots in local part
+		'a@b..co', // consecutive dots in domain
+	])
+
+testPattern('URL pattern', URL_PATTERN,
+	[
+		'https://example.com',
+		'http://example.com/path?q=1#x',
+		'example.com', // scheme is optional
+		'www.example.co.uk/a',
+	],
+	[
+		'https://exa mple.com', // whitespace
+		'https://example', // no TLD
+		'',
+	],
+	[
+		'ftp://example.com', // only http(s) schemes are meant to be accepted
+	])
+
+testPattern('MySQL timestamp pattern', MYSQL_TIMESTAMP_PATTERN,
+	[
+		'2024-01-01 12:00:00',
+		'1999-12-31 23:59:59',
+	],
+	[
+		'2024-01-01T12:00:00', // ISO "T" separator
+		'2024-1-1 12:00:00', // missing zero-padding
+		'2024-01-01 12:00', // missing seconds
+		'',
+	],
+	[
+		'2024-13-45 99:99:99', // field ranges aren't checked
+	])
+
+testPattern('ISO 8601 strict datetime pattern', ISO_8601_DATETIME_PATTERN_STRICT,
+	[
+		'2024-01-01T12:00:00Z',
+		'2024-01-01T12:00:00.123+02:00',
+		'2024-01-01T12:00:00', // offset is optional
+	],
+	[
+		'2024-01-01T12:00', // missing seconds
+		'2024-01-01 12:00:00Z', // space separator
+		'2024-01-01', // date only
+		'',
+	],
+	[
+		'2024-01-01T29:00:00Z', // hour out of range
+		'2024-19-39T12:00:00Z', // month and day out of range
+	])
+
+testPattern('ISO 8601 datetime pattern', ISO_8601_DATETIME_PATTERN,
+	[
+		'2024-01-01T12:00:00',
+		'2024-01-01T12:00', // seconds are optional
+		'2024-01-01T12:00:00.5',
+	],
+	[
+		'2024-01-01T12:00:00Z', // offsets are not accepted
+		'2024-01-01', // date only
+		'',
+	])
+
+testPattern('ISO 8601 time pattern', ISO_8601_TIME_PATTERN,
+	[
+		'12:00:00',
+		'23:59:59Z',
+		'00:00:00+05:30',
+	],
+	[
+		'24:00:00', // hour out of range
+		'12:60:00', // minute out of range
+		'12:00', // missing seconds
+		'12:00:00+24:00', // offset out of range
+		'',
+	])
+
+testPattern('Contains lowercase pattern', CONTAINS_LOWERCASE_CHARACTER_PATTERN, ['ABCd', 'a'], ['ABC', '123', ''])
+testPattern('Contains uppercase pattern', CONTAINS_UPPERCASE_CHARACTER_PATTERN, ['abcD', 'A'], ['abc', '123', ''])
+testPattern('Contains digit pattern', CONTAINS_DIGIT_CHARACTER_PATTERN, ['abc1', '0'], ['abc', ''])
+testPattern('Contains symbol pattern', CONTAINS_SYMBOL_CHARACTER_PATTERN,
+	['abc!', '#', 'a-b'],
+	[
+		'abc_', // underscore counts as a word character
+		'abc 1', // whitespace isn't a symbol
+		'abc',
 		'',
 	])

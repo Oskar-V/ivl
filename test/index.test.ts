@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { getValueErrors, getValueErrorsSync, getSchemaErrors, getSchemaErrorsSync, getValueErrorsAsync } from '../src';
+import { getValueErrors, getValueErrorsSync, getSchemaErrors, getSchemaErrorsSync, getValueErrorsAsync, getSchemaErrorsAsync } from '../src';
 import type { SCHEMA, SCHEMA_SYNC, CHECKABLE_OBJECT } from '../src/types';
 
 describe('Successfully detect failing rules', () => {
@@ -164,5 +164,73 @@ describe('acceptAny schema helper', () => {
 		expect(getSchemaErrors({ user: { name: 'name', email: 'email' } }, test_schema)).toEqual({ user: [] });
 		expect(getSchemaErrors({ user: { email: 'email' } }, test_schema)).toEqual({ user: [['is a valid id'], ['has a name']] });
 		expect(getSchemaErrors({ user: 'name' }, test_schema)).toEqual({ user: [['is a valid id'], ['has a name', 'has an email']] });
+	})
+})
+describe('Execution semantics', () => {
+	const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	test('Errors follow rule order when sync and async rules are mixed', async () => {
+		const rules = {
+			"First": () => false,
+			"Second (slow async)": async () => { await delay(5); return false },
+			"Third": () => false,
+			"Fourth (fast async)": async () => false,
+			"Passes": () => true,
+		};
+		const expected = ['First', 'Second (slow async)', 'Third', 'Fourth (fast async)'];
+		expect(await getValueErrors(null, rules)).toEqual(expected);
+		expect(await getValueErrorsAsync(null, rules)).toEqual(expected);
+	})
+
+	test('The async path awaits a plain rule that returns a promise', async () => {
+		const rules = {
+			"Resolves true": (() => Promise.resolve(true)) as unknown as () => boolean,
+			"Resolves false": (() => Promise.resolve(false)) as unknown as () => boolean,
+			"Rejects": (() => Promise.reject(new Error('nope'))) as unknown as () => boolean,
+		};
+		expect(await getValueErrorsAsync(null, rules)).toEqual(['Resolves false', 'Rejects']);
+	})
+
+	test('A rejecting async rule fails without failing the others', async () => {
+		const rules = {
+			"Rejects": async () => { throw new Error('nope') },
+			"Passes": async () => true,
+		};
+		expect(await getValueErrorsAsync(null, rules)).toEqual(['Rejects']);
+	})
+
+	test('Overload arguments reach every rule on every path', async () => {
+		const sync_rules = { "Matches context": (i: unknown, expected: unknown) => i === expected };
+		const async_rules = { "Matches context": async (i: unknown, expected: unknown) => i === expected };
+		expect(getValueErrorsSync('a', sync_rules, 'a')).toEqual([]);
+		expect(getValueErrorsSync('a', sync_rules, 'b')).toEqual(['Matches context']);
+		expect(getValueErrors('a', sync_rules, 'b')).toEqual(['Matches context']);
+		expect(await getValueErrorsAsync('a', sync_rules, 'a')).toEqual([]);
+		expect(await getValueErrors('a', async_rules, 'b')).toEqual(['Matches context']);
+		expect(getSchemaErrorsSync({ key: 'a' }, { key: sync_rules }, {}, 'a')).toEqual({ key: [] });
+		expect(await getSchemaErrorsAsync({ key: 'a' }, { key: async_rules }, {}, 'b')).toEqual({ key: ['Matches context'] });
+		expect(await getSchemaErrors({ key: 'a' }, { key: [async_rules, sync_rules] }, {}, 'b')).toEqual({ key: [['Matches context'], ['Matches context']] });
+	})
+
+	test('Async schemas with sync and async fields report every field', async () => {
+		const schema = {
+			sync_field: { "Is string": (i: unknown) => typeof i === 'string' },
+			async_field: { "Is number": async (i: unknown) => typeof i === 'number' },
+			alternatives: [
+				{ "Is slow true": async (i: unknown) => { await delay(5); return i === true } },
+				{ "Is null": (i: unknown) => i === null },
+			],
+		};
+		expect(await getSchemaErrors({ sync_field: 's', async_field: 1, alternatives: null }, schema))
+			.toEqual({ sync_field: [], async_field: [], alternatives: [] });
+		expect(await getSchemaErrors({ sync_field: 1, async_field: 's', alternatives: 's' }, schema))
+			.toEqual({ sync_field: ['Is string'], async_field: ['Is number'], alternatives: [['Is slow true'], ['Is null']] });
+	})
+
+	test('Rules inherited through the prototype are ignored, like before', () => {
+		const base = { "Inherited fails": () => false };
+		const rules = Object.assign(Object.create(base), { "Own passes": () => true });
+		expect(getValueErrorsSync(null, rules)).toEqual([]);
+		expect(getValueErrors(null, rules)).toEqual([]);
 	})
 })
